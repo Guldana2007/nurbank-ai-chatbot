@@ -1,160 +1,237 @@
-🤖 AI ChatBot для сайта www.nurbank.kz
+AI ChatBot for Nurbank.kz — RAG + Local LLM Pipeline
 
-Этот проект — AI-ассистент Нурбанка, который отвечает на вопросы пользователей на основе информации с сайта https://www.nurbank.kz
-.
-В проекте реализован чат с удобным интерфейсом, поддерживающий русский, казахский и английский языки.
+Этот проект реализует полноценный AI-ассистент для сайта www.nurbank.kz
+, который отвечает на вопросы пользователей строго на основе информации, полученной с официального сайта банка.
 
-🚀 Возможности
+Система сочетает локальную базу знаний (FAISS + BGE-M3), парсер HTML-контента, LLM (Llama3 через Ollama) и современный UI (React + Vite).
+Поддерживаются три языка: русский, казахский и английский.
 
-📌 Поддержка 3 языков: русский, казахский, английский
+Проект демонстрирует навыки в:
 
-📚 Использование локальной базы знаний (FAISS + BGE3)
+разработке RAG-архитектур
 
-🧠 Генерация ответов локальной LLM-моделью (llama3 через Ollama)
+сборе и обработке данных
 
-💬 Удобный интерфейс чата (React + Vite)
+векторном поиске
 
-⏰ Отображение времени сообщений
+работе с локальными LLM
 
-⌛ Лоадер «Бот печатает…»
+проектировании фронтенд и бекенд систем
 
-🌙/☀️ Переключение между светлой и тёмной темами
+инженерии CI/CD и деплоя
 
-🔒 Работа оффлайн (все модели локальные)
+Key Capabilities
 
-📁 Структура проекта
+ Поддержка RU / KZ / EN
+
+Локальная база знаний (FAISS + BGE3)
+
+Генерация ответов моделью Llama3 (Ollama)
+
+UI чата (React + Vite)
+
+Время сообщений
+
+Лоадер «бот печатает…»
+
+Светлая/тёмная тема
+
+Полностью оффлайн-режим
+
+Project Structure
 ai_nur_bot_upgraded-nfactorial/
 ├── app/                         # Backend (FastAPI + Ollama + FAISS)
 │   ├── main_ollama_site_lang_bge3.py
 │   ├── config.py
 │   ├── retriever.py
 │   └── llm.py
-├── nurbank-ai-frontend/          # Frontend (React + Vite)
+│
+├── nurbank-ai-frontend/         # Frontend (React + Vite)
 │   ├── src/
 │   │   └── App.jsx
 │   ├── package.json
 │   └── vite.config.js
+│
 ├── data/                        # Данные для embed'динга
 │   ├── urls.txt
 │   ├── chunked_data.json
 │   └── embeddings_input.jsonl
+│
 ├── embeddings_bge3/             # FAISS-индекс
 │   ├── index.faiss
 │   └── embeddings.npy
-├── build_faiss_bge3.py          # Индексация векторной базы
-├── parse_content_fast.py        # Парсинг HTML с сайта
-├── crawl_urls_sitemap.py        # Сбор URL по sitemap
-├── requirements.txt             # Python-зависимости
+│
+├── build_faiss_bge3.py          # Генерация FAISS индекса
+├── parse_content_fast.py         # Парсинг HTML контента
+├── crawl_urls_sitemap.py         # Сбор URL через sitemap
+├── requirements.txt
 └── README.md
 
-⚙️ Установка и запуск
-1. Клонирование репозитория
+System Architecture
+                +-------------------------------+
+                |   Website: www.nurbank.kz     |
+                +-------------------------------+
+                              |
+                              v
+                +-------------------------------+
+                |   parse_content_fast.py       |
+                |  (1 URL = 1 semantic chunk)   |
+                +-------------------------------+
+                              |
+                              v
+                  +-----------------------+
+                  | embeddings_input.jsonl|
+                  +-----------------------+
+                              |
+                              v
+                +-------------------------------+
+                |      build_faiss_bge3.py      |
+                | - BGE-M3 embeddings           |
+                | - FAISS index                 |
+                +-------------------------------+
+                              |
+                    +---------+---------+
+                    |                   |
+                    v                   v
+         +------------------+   +---------------------+
+         |  embeddings.npy  |   |    index.faiss      |
+         +------------------+   +---------------------+
+                    ^                   |
+                    |                   v
+                +-------------------------------+
+                |         retriever.py          |
+                +-------------------------------+
+                              |
+                              v
+                +-------------------------------+
+                |    Llama3 (via Ollama API)    |
+                +-------------------------------+
+                              |
+                              v
+                +-------------------------------+
+                |     FastAPI backend (app/)    |
+                +-------------------------------+
+                              |
+                              v
+                +-------------------------------+
+                |     React + Vite frontend     |
+                +-------------------------------+
+
+Installation & Run
+1. Clone
 git clone https://github.com/your-username/ai_nur_bot_upgraded-nfactorial.git
 cd ai_nur_bot_upgraded-nfactorial
 
 2. Backend (FastAPI + Ollama)
 
-Установите зависимости:
+Установка зависимостей:
 
 pip install -r requirements.txt
 
 
-Запустите Ollama и модель:
+Запуск модели:
 
 ollama run llama3
 
 
-Перейдите в папку backend и запустите сервер:
+Запуск сервера:
 
 cd app
 uvicorn main_ollama_site_lang_bge3:app --port 9000 --reload
 
 
-Проверьте:
+Проверка:
 
 http://127.0.0.1:9000
- → должно быть сообщение "Hello! NurBank AI Assistant is running 🚀"
+ → “Hello! NurBank AI Assistant is running 🚀”
 
 http://127.0.0.1:9000/health
- → {"status": "ok"}
+ → { "status": "ok" }
 
 3. Frontend (React + Vite)
-
-Перейдите в папку фронтенда:
-
 cd nurbank-ai-frontend
 npm install
 npm run dev
 
 
-Откройте: http://localhost:5173
+Открыть: http://localhost:5173
 
-🧠 Как работает
+How It Works
 
-Сайт Нурбанка парсится (parse_content_fast.py)
+Скрипт parse_content_fast.py собирает контент с nurbank.kz
 
-Каждая страница = 1 чанк (сохранение семантики)
+Каждая страница → один семантический чанк
 
-Чанки обрабатываются моделью BAAI/bge-m3 и индексируются через FAISS
+BGE-M3 создаёт эмбеддинги
+
+FAISS индексирует документы
 
 При запросе пользователя:
 
-система ищет релевантные документы в FAISS
+выполняется поиск по индексу
 
-формирует промпт
+формируется промпт
 
-передаёт в LLM (llama3 через Ollama)
+Llama3 генерирует ответ
 
-возвращает готовый ответ
+Интерфейс React отображает диалог
 
-Интерфейс (React) отображает ответ в чате
-
-💡 Почему выбран этот стек
+Why This Tech Stack
 Компонент	Выбор	Обоснование
-LLM	llama3 (через Ollama)	Локальная, бесплатная, работает оффлайн
-Embeddings	BAAI/bge-m3	Поддержка многоязычия, высокая точность
-Векторная БД	FAISS	Быстрая и лёгкая в работе
-Backend	FastAPI	Быстрый Python-фреймворк для API
-Frontend	React + Vite	Удобный, быстрый, современный UI
-🎯 Уникальные подходы
+LLM	Llama3 + Ollama	Локальная, бесплатная, оффлайн
+Embeddings	BGE-M3	Отличная точность в RU/KZ/EN
+Vector DB	FAISS	Быстрый и лёгкий
+Backend	FastAPI	Идеален для ML API
+Frontend	React + Vite	Современный, быстрый UI
+Unique Design Decisions
 
-1 URL = 1 чанк — сохранение целостности текста
+1 URL = 1 чанк
 
-Полностью оффлайн — база знаний и LLM работают локально
+Полностью локальная работа (LLM + FAISS)
 
-Мультиязычность — поддержка русского, казахского, английского
+Мультиязычная генерация
 
-UI-фичи: время сообщений, лоадер «бот печатает…», светлая/тёмная тема
+UI: время сообщений, механизм «бот печатает…», темизация
 
-🤝 Компромиссы
+Compromises
 
-Backend пока локальный → фронтенд на Vercel не сможет достучаться, если не задеплоить backend (например, на Render).
+Backend локальный → деплой фронтенда требует публичного backend
 
-Парсинг сайта мог пропустить скрытый контент (FAQ, динамические блоки).
+FAQ и динамические блоки сайта могли быть пропущены
 
-Некоторые страницы /cards/ были дополнены вручную.
+Некоторые страницы /cards/ дополнялись вручную
 
-🐞 Известные проблемы
+Known Issues
 
-Иногда дубли в chunked_data.json при сбое парсинга
+Возможны дубли в chunked_data.json
 
-Если не фильтровать дубли, FAISS индекс засоряется
+FAISS индекс может засоряться при ошибках парсинга
 
-При долгих ответах LLM возможна задержка (до 10 сек)
+Длинные ответы LLM занимают до 5–10 сек
 
-🌐 Деплой
+Deployment
 
-Frontend можно развернуть на Vercel/Netlify
+Frontend можно разместить на:
 
-Backend — на Render/Railway или собственном сервере
+Vercel
 
-В .env у фронтенда нужно прописать адрес backend:
+Netlify
+
+Backend:
+
+Render
+
+Railway
+
+VPS/сервер банка
+
+Фронтенд переменная:
 
 VITE_API_URL=https://ваш-бэкенд.onrender.com
 
-🧠 Автор проекта
+Project Ownership
 
+Author:
 Guldana Kassym-Ashim
-RPA and AI Team Lead, АО «Нурбанк»
-
-
+Team Lead, RPA & AI
+АО «Нурбанк»
